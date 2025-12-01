@@ -3,8 +3,8 @@ from pathlib import Path
 
 API_URL = "https://eajeyq4r3zljoq4rpovy2nthda0vtjqf.lambda-url.ap-south-1.on.aws/"
 
-STUDENT_ID = "YOUR_STUDENT_ID"
-GITHUB_REPO_URL = "https://github.com/yourusername/pki-2fa-project"  # exact URL
+STUDENT_ID = "23MH1A05H8"
+GITHUB_REPO_URL = "https://github.com/usha3107/pki-2fa-project"  # exact URL
 
 def request_seed(student_id: str, github_repo_url: str, api_url: str = API_URL):
     public_pem = Path("student_public.pem").read_text()
@@ -27,4 +27,4 @@ def request_seed(student_id: str, github_repo_url: str, api_url: str = API_URL):
     print("Saved encrypted_seed.txt")
 
 if __name__ == "__main__":
-    request_seed(STUDENT_ID, GITHUB_REPO_URL)
+    request_seed("23MH1A05H8", "https://github.com/usha3107/pki-2fa-project")
