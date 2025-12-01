@@ -7,7 +7,7 @@ from app.crypto_utils import load_private_key, decrypt_seed, STUDENT_PRIVATE_KEY
 from app.totp_utils import generate_totp_code, verify_totp_code, seconds_remaining_in_period
 
 app = FastAPI()
-SEED_PATH = Path("data/seed.txt")  # local path; Docker will override to /data
+SEED_PATH = Path("/data/seed.txt")  # local path; Docker will override to /data
 
 class DecryptSeedRequest(BaseModel):
     encrypted_seed: str
