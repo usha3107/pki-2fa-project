@@ -1,41 +1,28 @@
-# app/totp_utils.py
-import re
 import base64
-import pyotp
 import time
+import pyotp
 
-HEX_RE = re.compile(r'^[0-9a-fA-F]+$')
+PERIOD_SECONDS = 30
+DIGITS = 6
 
 def hex_to_base32(hex_seed: str) -> str:
-    if not isinstance(hex_seed, str):
-        raise TypeError("hex_seed must be a string")
-    # strip whitespace/newlines, remove optional 0x prefix
-    s = hex_seed.strip()
-    if s.startswith("0x") or s.startswith("0X"):
-        s = s[2:]
-    # ensure only hex chars and even length
-    if not s:
-        raise ValueError("empty hex seed")
-    if not HEX_RE.fullmatch(s):
-        raise ValueError("hex_seed contains non-hex characters")
-    if len(s) % 2 != 0:
-        raise ValueError("hex_seed must have an even number of hex characters")
-    b = bytes.fromhex(s)
-    # base32 encode and decode to ascii, remove padding (pyotp tolerates without '=' too)
-    b32 = base64.b32encode(b).decode('ascii').rstrip('=')
-    return b32
+    # 1. hex string -> bytes
+    seed_bytes = bytes.fromhex(hex_seed)
+    # 2. bytes -> base32 string
+    return base64.b32encode(seed_bytes).decode("utf-8")
 
-def generate_totp_code(hex_seed: str, digits: int = 6, period: int = 30) -> str:
-    secret_b32 = hex_to_base32(hex_seed)
-    totp = pyotp.TOTP(secret_b32, digits=digits, interval=period)
+def generate_totp_code(hex_seed: str) -> str:
+    b32 = hex_to_base32(hex_seed)
+    totp = pyotp.TOTP(b32, interval=PERIOD_SECONDS, digits=DIGITS)
     return totp.now()
 
-def verify_totp_code(hex_seed: str, code: str, digits: int = 6, period: int = 30) -> bool:
-    secret_b32 = hex_to_base32(hex_seed)
-    totp = pyotp.TOTP(secret_b32, digits=digits, interval=period)
-    # allow small window if required: window=1 means ±1 interval
-    return totp.verify(code, valid_window=1)
+def verify_totp_code(hex_seed: str, code: str, valid_window: int = 1) -> bool:
+    b32 = hex_to_base32(hex_seed)
+    totp = pyotp.TOTP(b32, interval=PERIOD_SECONDS, digits=DIGITS)
+    # valid_window=1 → accept current, previous, next 30s window
+    return totp.verify(code, valid_window=valid_window)
 
-def seconds_remaining_in_period(period: int = 30) -> int:
+def seconds_remaining_in_period() -> int:
     now = int(time.time())
-    return period - (now % period)
+    elapsed = now % PERIOD_SECONDS
+    return PERIOD_SECONDS - elapsed
